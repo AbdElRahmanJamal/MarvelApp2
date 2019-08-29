@@ -5,7 +5,9 @@ import android.app.SearchManager
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -13,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.marvelapp.MarvelBaseFragment
 import com.marvelapp.R
 import com.marvelapp.frameworks.apiservice.MarvelApiService
 import com.marvelapp.frameworks.apiservice.interceptor.ConnectivityInterceptor
@@ -38,7 +41,8 @@ import kotlinx.android.synthetic.main.fragment_home.*
  * create an instance of this fragment.
  *
  */
-class MarvelCharacters : Fragment() {
+class MarvelCharacters : MarvelBaseFragment() {
+
 
     lateinit var marvelCharactersAdapter: MarvelCharactersAdapter
     private lateinit var marvelCharactersViewModel: MarvelCharactersViewModel
@@ -46,14 +50,7 @@ class MarvelCharacters : Fragment() {
     private val disposables = CompositeDisposable()
     private val loadMoreMarvelCharacters = BehaviorSubject.create<MarvelCharactersViewIntents>()
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false)
-
-    }
+    override fun getLayoutId() = R.layout.fragment_home
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -62,51 +59,52 @@ class MarvelCharacters : Fragment() {
         initRecView()
 
         marvelCharactersViewModelFactory = MarvelCharactersViewModelFactory(
-            GetMarvelCharactersUseCase(
-                MarvelCharactersRepository(
-                    MarvelCharactersDataStore(
-                        MarvelApiService(ConnectivityInterceptor(activity!!.applicationContext))
-                    )
+                GetMarvelCharactersUseCase(
+                        MarvelCharactersRepository(
+                                MarvelCharactersDataStore(
+                                        MarvelApiService(ConnectivityInterceptor(activity!!.applicationContext))
+                                )
+                        )
                 )
-            )
         )
 
         marvelCharactersViewModel = ViewModelProviders.of(this, marvelCharactersViewModelFactory)
-            .get(MarvelCharactersViewModel::class.java)
+                .get(MarvelCharactersViewModel::class.java)
 
 
         val dispose = marvelCharactersViewModel
-            .getMarvelHomePageCharacters(getMarvelCharactersViewsIntents())
-            .subscribe {
-                renderViewState(it)
-            }
+                .getMarvelHomePageCharacters(getMarvelCharactersViewsIntents())
+                .subscribe {
+                    renderViewState(it)
+                }
         disposables.add(dispose)
     }
 
     private fun renderViewState(state: MarvelCharactersViewStates) {
         when (state) {
             is MarvelCharactersViewStates.LoadingState -> {
-                // handleLoadingState()
+                showLoadingIndicator()
             }
             is MarvelCharactersViewStates.SuccessState -> {
                 handleOnSuccessState(state)
             }
             is MarvelCharactersViewStates.ErrorState -> {
-                //handleOnErrorState(state)
+                hideLoadingIndicator()
             }
 
             is MarvelCharactersViewStates.LoadMoreMarvelCharactersViewState -> {
-                loading_layout.visibility = View.VISIBLE
+                showLoadMoreLoading()
             }
             is MarvelCharactersViewStates.HideLoadMoreViewState -> {
-                loading_layout.visibility = View.GONE
+                hideLoadMoreLoading()
             }
         }
     }
 
     private fun handleOnSuccessState(state: MarvelCharactersViewStates.SuccessState) {
-        loading_layout.visibility = View.GONE
+        hideLoadMoreLoading()
         marvelCharactersAdapter.setMarvelCharacters(state.marvelCharacters.data.results)
+        hideLoadingIndicator()
     }
 
     private fun getMarvelCharactersViewsIntents() = Observable.merge(onHomePageStart(), onLoadMoreMarvelCharacters())
@@ -125,8 +123,8 @@ class MarvelCharacters : Fragment() {
             it.addOnScrollListener(object : EndlessOnScrollListener() {
                 override fun onScrolledToEnd() {
                     loadMoreMarvelCharacters.onNext(
-                        MarvelCharactersViewIntents
-                            .GetMoreMarvelCharactersIntent(offset = it.adapter!!.itemCount)
+                            MarvelCharactersViewIntents
+                                    .GetMoreMarvelCharactersIntent(offset = it.adapter!!.itemCount)
                     )
                 }
             })
@@ -150,9 +148,9 @@ class MarvelCharacters : Fragment() {
             searchView = searchItem.actionView as SearchView
         }
 
-        if (searchView != null) {
-            searchForMovie(searchView, searchManager)
-            changeSearchIconOfSearchView(searchView)
+        searchView?.let {
+            searchForMovie(it, searchManager)
+            changeSearchIconOfSearchView(it)
         }
 
     }
@@ -160,16 +158,16 @@ class MarvelCharacters : Fragment() {
     private fun changeSearchIconOfSearchView(searchView: SearchView) {
         val searchIcon: ImageView = searchView.findViewById(R.id.search_button)
         searchIcon.setImageDrawable(
-            ContextCompat.getDrawable(
-                activity!!,
-                R.drawable.ic_search_magnifier_interface_symbol
-            )
+                ContextCompat.getDrawable(
+                        activity!!,
+                        R.drawable.ic_search_magnifier_interface_symbol
+                )
         )
     }
 
     private fun searchForMovie(
-        searchView: SearchView,
-        searchManager: SearchManager
+            searchView: SearchView,
+            searchManager: SearchManager
     ) {
         val queryTextListener: SearchView.OnQueryTextListener
         searchView.setSearchableInfo(searchManager.getSearchableInfo(activity!!.componentName))
