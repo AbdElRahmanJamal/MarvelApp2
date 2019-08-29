@@ -21,8 +21,11 @@ import com.marvelapp.home.data.MarvelCharactersRepository
 import com.marvelapp.home.domain.GetMarvelCharactersUseCase
 import com.marvelapp.home.presentation.mvilogic.MarvelCharactersViewIntents
 import com.marvelapp.home.presentation.mvilogic.MarvelCharactersViewStates
+import com.marvelapp.home.presentation.view.marvelCharactersRecView.EndlessOnScrollListener
+import com.marvelapp.home.presentation.view.marvelCharactersRecView.MarvelCharactersAdapter
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.fragment_home.*
 
 
@@ -41,10 +44,11 @@ class MarvelCharacters : Fragment() {
     private lateinit var marvelCharactersViewModel: MarvelCharactersViewModel
     private lateinit var marvelCharactersViewModelFactory: MarvelCharactersViewModelFactory
     private val disposables = CompositeDisposable()
+    private val playerViewsIntent = BehaviorSubject.create<MarvelCharactersViewIntents>()
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false)
@@ -57,23 +61,25 @@ class MarvelCharacters : Fragment() {
         setHasOptionsMenu(true)
         initRecView()
 
-        marvelCharactersViewModelFactory = MarvelCharactersViewModelFactory(GetMarvelCharactersUseCase(
+        marvelCharactersViewModelFactory = MarvelCharactersViewModelFactory(
+            GetMarvelCharactersUseCase(
                 MarvelCharactersRepository(
-                        MarvelCharactersDataStore(
-                                MarvelApiService(ConnectivityInterceptor(activity!!.applicationContext))
-                        )
+                    MarvelCharactersDataStore(
+                        MarvelApiService(ConnectivityInterceptor(activity!!.applicationContext))
+                    )
                 )
-        ))
+            )
+        )
 
         marvelCharactersViewModel = ViewModelProviders.of(this, marvelCharactersViewModelFactory)
-                .get(MarvelCharactersViewModel::class.java)
+            .get(MarvelCharactersViewModel::class.java)
 
 
         val dispose = marvelCharactersViewModel
-                .getMarvelHomePageCharacters(getMarvelCharactersViewsIntents())
-                .subscribe {
-            renderViewState(it)
-        }
+            .getMarvelHomePageCharacters(getMarvelCharactersViewsIntents())
+            .subscribe {
+                renderViewState(it)
+            }
         disposables.add(dispose)
     }
 
@@ -89,20 +95,26 @@ class MarvelCharacters : Fragment() {
                 //handleOnErrorState(state)
             }
 
+            is MarvelCharactersViewStates.LoadMoreMarvelCharactersViewState -> {
+                loading_layout.visibility = View.VISIBLE
+            }
+            is MarvelCharactersViewStates.HideLoadMoreViewState -> {
+                loading_layout.visibility = View.GONE
+            }
         }
     }
 
     private fun handleOnSuccessState(state: MarvelCharactersViewStates.SuccessState) {
-        marvelCharactersAdapter.setMarvelCharacters(state.marvelCharacters.data.results);
+        loading_layout.visibility = View.GONE
+        marvelCharactersAdapter.setMarvelCharacters(state.marvelCharacters.data.results)
     }
 
-    private fun getMarvelCharactersViewsIntents(): Observable<out MarvelCharactersViewIntents> {
-        return Observable.just(onHomePageStart())
-    }
+    private fun getMarvelCharactersViewsIntents() = Observable.merge(onHomePageStart(), onLoadMoreMarvelCharacters())
 
-    private fun onHomePageStart(): MarvelCharactersViewIntents {
-        return MarvelCharactersViewIntents.GetMarvelCharactersIntent
-    }
+
+    private fun onHomePageStart() = Observable.just(MarvelCharactersViewIntents.GetMarvelCharactersIntent)
+
+    private fun onLoadMoreMarvelCharacters() = playerViewsIntent
 
     private fun initRecView() {
         marvelCharactersAdapter = MarvelCharactersAdapter()
@@ -110,6 +122,14 @@ class MarvelCharacters : Fragment() {
             it.layoutManager = LinearLayoutManager(context)
             it.adapter = marvelCharactersAdapter
 
+            it.addOnScrollListener(object : EndlessOnScrollListener() {
+                override fun onScrolledToEnd() {
+                    playerViewsIntent.onNext(
+                        MarvelCharactersViewIntents
+                            .GetMoreMarvelCharactersIntent(offset = it.adapter!!.itemCount)
+                    )
+                }
+            })
         }
     }
 
@@ -140,16 +160,16 @@ class MarvelCharacters : Fragment() {
     private fun changeSearchIconOfSearchView(searchView: SearchView) {
         val searchIcon: ImageView = searchView.findViewById(R.id.search_button)
         searchIcon.setImageDrawable(
-                ContextCompat.getDrawable(
-                        activity!!,
-                        R.drawable.ic_search_magnifier_interface_symbol
-                )
+            ContextCompat.getDrawable(
+                activity!!,
+                R.drawable.ic_search_magnifier_interface_symbol
+            )
         )
     }
 
     private fun searchForMovie(
-            searchView: SearchView,
-            searchManager: SearchManager
+        searchView: SearchView,
+        searchManager: SearchManager
     ) {
         val queryTextListener: SearchView.OnQueryTextListener
         searchView.setSearchableInfo(searchManager.getSearchableInfo(activity!!.componentName))

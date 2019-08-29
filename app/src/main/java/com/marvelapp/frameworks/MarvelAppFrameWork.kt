@@ -7,11 +7,11 @@ import com.marvelapp.R
 
 fun downloadImage(context: Context, url: String, imageView: ImageView) {
     GlideApp.with(context)
-            .load(url)
-            .placeholder(R.drawable.ic_marvellogo)
-            .error(R.drawable.ic_marvellogo)
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .centerCrop()
-            .into(imageView)
+        .load(url)
+        .centerCrop()
+        .placeholder(R.drawable.ic_the_avengers)
+        .error(R.drawable.ic_the_avengers)
+        .diskCacheStrategy(DiskCacheStrategy.ALL)
+        .into(imageView)
 
 }
