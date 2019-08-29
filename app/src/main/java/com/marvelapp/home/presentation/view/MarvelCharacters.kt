@@ -44,7 +44,7 @@ class MarvelCharacters : Fragment() {
     private lateinit var marvelCharactersViewModel: MarvelCharactersViewModel
     private lateinit var marvelCharactersViewModelFactory: MarvelCharactersViewModelFactory
     private val disposables = CompositeDisposable()
-    private val playerViewsIntent = BehaviorSubject.create<MarvelCharactersViewIntents>()
+    private val loadMoreMarvelCharacters = BehaviorSubject.create<MarvelCharactersViewIntents>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -114,7 +114,7 @@ class MarvelCharacters : Fragment() {
 
     private fun onHomePageStart() = Observable.just(MarvelCharactersViewIntents.GetMarvelCharactersIntent)
 
-    private fun onLoadMoreMarvelCharacters() = playerViewsIntent
+    private fun onLoadMoreMarvelCharacters() = loadMoreMarvelCharacters
 
     private fun initRecView() {
         marvelCharactersAdapter = MarvelCharactersAdapter()
@@ -124,7 +124,7 @@ class MarvelCharacters : Fragment() {
 
             it.addOnScrollListener(object : EndlessOnScrollListener() {
                 override fun onScrolledToEnd() {
-                    playerViewsIntent.onNext(
+                    loadMoreMarvelCharacters.onNext(
                         MarvelCharactersViewIntents
                             .GetMoreMarvelCharactersIntent(offset = it.adapter!!.itemCount)
                     )

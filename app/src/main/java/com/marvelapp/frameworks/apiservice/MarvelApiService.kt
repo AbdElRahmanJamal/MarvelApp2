@@ -12,6 +12,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface MarvelApiService {
+
     @GET("v1/public/characters")
     fun getMarvelCharacters(
             @Query("limit") limit: Int,
