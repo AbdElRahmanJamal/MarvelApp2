@@ -1,4 +1,4 @@
-package com.marvelapp.home.presentation.view
+package com.marvelapp.home.presentation.view.marvelCharactersRecView
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.marvel_home_ticket.view.*
 
 class MarvelCharactersAdapter : RecyclerView.Adapter<MarvelCharactersAdapter.MarvelCharactersViewHolder>() {
 
-    private var marvelCharacters: List<Results> = emptyList()
+    private var marvelCharacters: MutableList<Results> = mutableListOf()
     private lateinit var context: Context
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarvelCharactersViewHolder {
@@ -32,7 +32,7 @@ class MarvelCharactersAdapter : RecyclerView.Adapter<MarvelCharactersAdapter.Mar
     }
 
     internal fun setMarvelCharacters(marvelCharacters: List<Results>) {
-        this.marvelCharacters = marvelCharacters
+        this.marvelCharacters.addAll(marvelCharacters)
         notifyDataSetChanged()
     }
 
