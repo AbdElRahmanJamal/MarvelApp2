@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.marvel_search_result_ticket.view.*
 class SearchResultMarvelCharactersAdapter :
     RecyclerView.Adapter<SearchResultMarvelCharactersAdapter.MarvelCharactersViewHolder>() {
 
-    private var marvelCharacters = emptyList<Results>()
+    private var marvelCharacters: MutableList<Results> = mutableListOf()
     private lateinit var context: Context
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarvelCharactersViewHolder {
@@ -33,7 +33,8 @@ class SearchResultMarvelCharactersAdapter :
     }
 
     fun setMarvelCharactersSearchResult(marvelCharacters: List<Results>) {
-        this.marvelCharacters = marvelCharacters
+        this.marvelCharacters.clear()
+        this.marvelCharacters.addAll(marvelCharacters)
         notifyDataSetChanged()
     }
 

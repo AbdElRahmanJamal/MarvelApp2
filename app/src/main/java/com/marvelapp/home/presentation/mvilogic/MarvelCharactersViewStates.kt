@@ -4,7 +4,7 @@ import com.marvelapp.home.entities.MarvelCharacters
 
 sealed class MarvelCharactersViewStates {
     //init marvel characters
-    object LoadingForGettingMarvelCharachtersState : MarvelCharactersViewStates()
+    object LoadingForGettingMarvelCharactersState : MarvelCharactersViewStates()
 
     data class ErrorState(val throwable: Throwable) : MarvelCharactersViewStates()
     data class SuccessState(val marvelCharacters: MarvelCharacters) : MarvelCharactersViewStates()
