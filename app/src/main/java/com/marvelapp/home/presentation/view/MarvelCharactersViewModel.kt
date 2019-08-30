@@ -21,13 +21,13 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
                 is MarvelCharactersViewIntents.GetMoreMarvelCharactersIntent -> {
                     getLoadMoreMarvelCharacters(limit = it.limit, offset = it.offset)
                 }
-                is MarvelCharactersViewIntents.onSearchIconClickedIntent -> {
+                is MarvelCharactersViewIntents.SearchIconClickedIntent -> {
                     Observable.just(MarvelCharactersViewStates.ShowSearchResultDialog)
                 }
-                is MarvelCharactersViewIntents.onSearchFieldChangeOfSearchDialogIntent -> {
+                is MarvelCharactersViewIntents.SearchFieldChangeOfSearchDialogIntent -> {
                     getSearchMarvelCharactersList(it.searchName)
                 }
-                is MarvelCharactersViewIntents.onCloseButtonOfSearchDialogClicked -> {
+                is MarvelCharactersViewIntents.CloseButtonOfSearchDialogClicked -> {
                     Observable.just(MarvelCharactersViewStates.CloseSearchResultDialog)
                 }
 

@@ -165,14 +165,14 @@ class MarvelCharacters : MarvelBaseFragment() {
         val searchFieldOfSearchDialog: TextView = searchResultDialog!!.findViewById(R.id.search_edit_txt)
         return RxTextView.textChanges(searchFieldOfSearchDialog).startWith("").map {
             MarvelCharactersViewIntents
-                .onSearchFieldChangeOfSearchDialogIntent(it.toString())
+                .SearchFieldChangeOfSearchDialogIntent(it.toString())
         }
     }
 
     private fun onCloseButtonOfSearchDialogClicked(): Observable<MarvelCharactersViewIntents> {
         val searchCloseButtonOfSearchDialog: ImageView = searchResultDialog!!.findViewById(R.id.search_close_btn)
         return RxView.clicks(searchCloseButtonOfSearchDialog).map {
-            MarvelCharactersViewIntents.onCloseButtonOfSearchDialogClicked
+            MarvelCharactersViewIntents.CloseButtonOfSearchDialogClicked
         }
     }
 
@@ -237,7 +237,7 @@ class MarvelCharacters : MarvelBaseFragment() {
 
     private fun setOnSearchIconClicked(searchView: SearchView) {
         val searchIcon: ImageView = searchView.findViewById(R.id.search_button)
-        searchIcon.setOnClickListener { onSearchIconClicked.onNext(MarvelCharactersViewIntents.onSearchIconClickedIntent) }
+        searchIcon.setOnClickListener { onSearchIconClicked.onNext(MarvelCharactersViewIntents.SearchIconClickedIntent) }
     }
 
     private fun changeSearchIconOfSearchView(searchView: SearchView) {
