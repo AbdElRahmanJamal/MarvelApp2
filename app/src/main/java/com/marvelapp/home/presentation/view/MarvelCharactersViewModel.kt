@@ -42,7 +42,7 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
             .subscribeOn(Schedulers.io())
             .map { MarvelCharactersViewStates.SuccessState(it) }
             .cast(MarvelCharactersViewStates::class.java)
-            .startWith(MarvelCharactersViewStates.LoadingForGettingMarvelCharachtersState)
+            .startWith(MarvelCharactersViewStates.LoadingForGettingMarvelCharactersState)
             .onErrorReturn { MarvelCharactersViewStates.ErrorState(it) }
 
     }

@@ -99,7 +99,7 @@ class MarvelCharacters : MarvelBaseFragment() {
     private fun renderViewState(state: MarvelCharactersViewStates) {
         when (state) {
 
-            is MarvelCharactersViewStates.LoadingForGettingMarvelCharachtersState -> {
+            is MarvelCharactersViewStates.LoadingForGettingMarvelCharactersState -> {
                 showLoadingIndicator()
             }
             is MarvelCharactersViewStates.SuccessState -> {
@@ -107,6 +107,7 @@ class MarvelCharacters : MarvelBaseFragment() {
             }
             is MarvelCharactersViewStates.ErrorState -> {
                 setLoadingViewForSearchResultVisibility(View.GONE)
+                searchResultMarvelCharactersAdapter.setMarvelCharactersSearchResult(emptyList())
                 hideLoadingIndicator()
             }
 
