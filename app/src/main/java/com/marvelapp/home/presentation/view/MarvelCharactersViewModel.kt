@@ -21,6 +21,16 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
                 is MarvelCharactersViewIntents.GetMoreMarvelCharactersIntent -> {
                     getLoadMoreMarvelCharacters(limit = it.limit, offset = it.offset)
                 }
+                is MarvelCharactersViewIntents.onSearchIconClickedIntent -> {
+                    Observable.just(MarvelCharactersViewStates.ShowSearchResultDialog)
+                }
+                is MarvelCharactersViewIntents.onSearchFieldChangeOfSearchDialogIntent -> {
+                    getSearchMarvelCharactersList(it.searchName)
+                }
+                is MarvelCharactersViewIntents.onCloseButtonOfSearchDialogClicked -> {
+                    Observable.just(MarvelCharactersViewStates.CloseSearchResultDialog)
+                }
+
             }
         }.distinctUntilChanged()
     }
@@ -32,7 +42,7 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
             .subscribeOn(Schedulers.io())
             .map { MarvelCharactersViewStates.SuccessState(it) }
             .cast(MarvelCharactersViewStates::class.java)
-            .startWith(MarvelCharactersViewStates.LoadingState)
+            .startWith(MarvelCharactersViewStates.LoadingForGettingMarvelCharachtersState)
             .onErrorReturn { MarvelCharactersViewStates.ErrorState(it) }
 
     }
@@ -55,4 +65,15 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
             .map { MarvelCharactersViewStates.SuccessState(it) }
             .cast(MarvelCharactersViewStates::class.java)
     }
+
+
+    fun getSearchMarvelCharactersList(name: String): Observable<MarvelCharactersViewStates>? =
+        getMarvelCharactersUseCase.getSearchMarvelCharactersList(name)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(Schedulers.io())
+            .toObservable()
+            .map { MarvelCharactersViewStates.SuccessForSearchResultState(it) }
+            .cast(MarvelCharactersViewStates::class.java)
+            .startWith(MarvelCharactersViewStates.ShowLoadingForSearchForCharacterByNameState)
+            .onErrorReturn { MarvelCharactersViewStates.ErrorState(it) }
 }
