@@ -6,7 +6,9 @@ import io.reactivex.Single
 
 class MarvelCharactersDataStore(private val marvelApiService: MarvelApiService) {
 
-    fun getMarvelCharacters(limit: Int, offset: Int): Single<MarvelCharacters> {
-        return marvelApiService.getMarvelCharacters(limit, offset)
-    }
+    fun getMarvelCharacters(limit: Int, offset: Int): Single<MarvelCharacters> =
+        marvelApiService.getMarvelCharacters(limit, offset)
+
+    fun getSearchMarvelCharactersList(name: String): Single<MarvelCharacters> =
+        marvelApiService.getSearchMarvelCharactersList(name)
 }

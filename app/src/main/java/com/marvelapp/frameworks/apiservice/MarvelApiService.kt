@@ -19,6 +19,11 @@ interface MarvelApiService {
             @Query("offset") offset: Int
     ): Single<MarvelCharacters>
 
+
+    @GET("v1/public/characters")
+    fun getSearchMarvelCharactersList(@Query("nameStartsWith") name: String): Single<MarvelCharacters>
+
+
     companion object {
         operator fun invoke(
                 connectivityInterceptor: ConnectivityInterceptor

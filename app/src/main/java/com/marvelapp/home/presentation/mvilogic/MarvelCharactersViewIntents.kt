@@ -4,4 +4,8 @@ sealed class MarvelCharactersViewIntents {
 
     object GetMarvelCharactersIntent : MarvelCharactersViewIntents()
     data class GetMoreMarvelCharactersIntent(val limit: Int = 15, val offset: Int) : MarvelCharactersViewIntents()
+    data class onSearchFieldChangeOfSearchDialogIntent(val searchName: String = "") : MarvelCharactersViewIntents()
+    object onCloseButtonOfSearchDialogClicked : MarvelCharactersViewIntents()
+    object onSearchIconClickedIntent : MarvelCharactersViewIntents()
+
 }
