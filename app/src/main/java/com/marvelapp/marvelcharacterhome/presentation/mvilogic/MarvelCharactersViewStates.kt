@@ -13,11 +13,13 @@ sealed class MarvelCharactersHomeViewStates {
 
 sealed class MarvelCharactersSearchDialogViewStates {
 
-    object CloseSearchResultDialogState : MarvelCharactersSearchDialogViewStates()
     object ShowSearchResultDialogState : MarvelCharactersSearchDialogViewStates()
-    object ShowLoadingSearchForCharacterByNameStateState : MarvelCharactersSearchDialogViewStates()
-    object HideLoadingSearchForCharacterByNameStateState : MarvelCharactersSearchDialogViewStates()
+    object ShowLoadingIndicatorSearchForCharacterState : MarvelCharactersSearchDialogViewStates()
+    object HideLoadingIndicatorSearchForCharacterState : MarvelCharactersSearchDialogViewStates()
+    object CloseSearchResultDialogState : MarvelCharactersSearchDialogViewStates()
     data class SuccessForSearchResultState(val marvelCharacters: MarvelCharacters) :
         MarvelCharactersSearchDialogViewStates()
+
+    object EmptyStateSearchResultDialog : MarvelCharactersSearchDialogViewStates()
 
 }

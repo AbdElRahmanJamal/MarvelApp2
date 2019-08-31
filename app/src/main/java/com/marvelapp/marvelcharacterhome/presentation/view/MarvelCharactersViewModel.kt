@@ -5,6 +5,7 @@ import com.marvelapp.marvelcharacterhome.domain.GetMarvelCharactersUseCase
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersHomeViewIntents
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersHomeViewStates
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersSearchDialogViewStates
+import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersSearchViewDialogIntents
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -21,6 +22,31 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
                 }
                 is MarvelCharactersHomeViewIntents.LoadingMoreMarvelCharactersIntent -> {
                     getLoadMoreMarvelCharacters(limit = it.limit, offset = it.offset)
+                }
+            }
+        }.distinctUntilChanged()
+    }
+
+    fun getMarvelCharactersSearchDialogResult(intents: Observable<out MarvelCharactersSearchViewDialogIntents>)
+            : Observable<MarvelCharactersSearchDialogViewStates> {
+
+        return intents.flatMap {
+            when (it) {
+                is MarvelCharactersSearchViewDialogIntents.SearchIconClickedIntent -> {
+                    Observable.just(MarvelCharactersSearchDialogViewStates.ShowSearchResultDialogState)
+                }
+                is MarvelCharactersSearchViewDialogIntents.SearchFieldChangeOfSearchDialogIntent -> {
+                    Observable.just(it.searchName).flatMap { searchName ->
+                        if (searchName.isEmpty()) {
+                            Observable.just(MarvelCharactersSearchDialogViewStates.EmptyStateSearchResultDialog)
+                        } else {
+                            getSearchForMarvelCharacterList(searchName)
+                        }
+                    }
+
+                }
+                is MarvelCharactersSearchViewDialogIntents.CloseButtonOfSearchDialogClickedIntent -> {
+                    Observable.just(MarvelCharactersSearchDialogViewStates.CloseSearchResultDialogState)
                 }
             }
         }.distinctUntilChanged()
@@ -57,13 +83,13 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
     }
 
 
-    fun getSearchForMarvelCharacterList(name: String): Observable<MarvelCharactersSearchDialogViewStates>? =
+    private fun getSearchForMarvelCharacterList(name: String): Observable<MarvelCharactersSearchDialogViewStates>? =
         getMarvelCharactersUseCase.getSearchMarvelCharactersList(name)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
             .toObservable()
             .map { MarvelCharactersSearchDialogViewStates.SuccessForSearchResultState(it) }
             .cast(MarvelCharactersSearchDialogViewStates::class.java)
-            .startWith(MarvelCharactersSearchDialogViewStates.ShowLoadingSearchForCharacterByNameStateState)
-            .onErrorReturn { MarvelCharactersSearchDialogViewStates.HideLoadingSearchForCharacterByNameStateState }
+            .startWith(MarvelCharactersSearchDialogViewStates.ShowLoadingIndicatorSearchForCharacterState)
+            .onErrorReturn { MarvelCharactersSearchDialogViewStates.HideLoadingIndicatorSearchForCharacterState }
 }
