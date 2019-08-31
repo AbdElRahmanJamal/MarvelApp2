@@ -40,7 +40,6 @@ abstract class MarvelBaseFragment : Fragment() {
     }
 
     fun hideLoadingIndicator() {
-
         loadingIndicator?.let {
             it.dismiss()
         }
