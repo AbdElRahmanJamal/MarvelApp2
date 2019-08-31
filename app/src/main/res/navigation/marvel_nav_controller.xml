@@ -3,6 +3,17 @@
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools" android:id="@+id/marvel_nav_controller"
             app:startDestination="@id/home">
-    <fragment android:id="@+id/home" android:name="com.marvelapp.home.presentation.view.MarvelCharacters"
-              tools:layout="@layout/fragment_home"/>
+    <fragment android:id="@+id/home" android:name="com.marvelapp.marvelcharacterhome.presentation.view.MarvelCharacters"
+              tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_from_home_to_marvelCharacterDetails"
+            app:destination="@+id/marvelCharacterDetails" />
+    </fragment>
+    <fragment
+        android:id="@+id/marvelCharacterDetails"
+        android:name="com.marvelapp.marvelcharacterdetails.presentation.view.MarvelCharacterDetails" >
+        <argument
+            android:name="MarvelCharacterData"
+            app:argType="com.marvelapp.entities.Results" />
+    </fragment>
 </navigation>

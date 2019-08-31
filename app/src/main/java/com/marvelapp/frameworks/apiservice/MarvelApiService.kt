@@ -1,7 +1,7 @@
 package com.marvelapp.frameworks.apiservice
 
 import com.marvelapp.frameworks.apiservice.interceptor.ConnectivityInterceptor
-import com.marvelapp.home.entities.MarvelCharacters
+import com.marvelapp.entities.MarvelCharacters
 import io.reactivex.Single
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient

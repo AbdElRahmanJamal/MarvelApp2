@@ -4,7 +4,7 @@
               android:layout_width="match_parent" android:layout_height="match_parent"
               android:background="@color/black_50_opacity"
               android:orientation="vertical"
-              tools:context="com.marvelapp.home.presentation.view.searchresultview.SearchResultDialog">
+              tools:context="com.marvelapp.marvelcharacterhome.presentation.view.searchresultview.SearchResultDialog">
 
     <LinearLayout
             android:background="#000000"
