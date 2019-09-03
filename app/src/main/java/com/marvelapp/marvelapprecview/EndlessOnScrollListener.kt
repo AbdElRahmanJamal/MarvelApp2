@@ -1,4 +1,4 @@
-package com.marvelapp.marvelcharacterhome.presentation.view.marvelCharactersRecView
+package com.marvelapp.marvelapprecview
 
 import androidx.recyclerview.widget.RecyclerView
 

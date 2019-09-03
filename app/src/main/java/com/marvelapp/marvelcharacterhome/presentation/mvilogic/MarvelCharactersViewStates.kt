@@ -1,6 +1,7 @@
 package com.marvelapp.marvelcharacterhome.presentation.mvilogic
 
 import com.marvelapp.entities.MarvelCharacters
+import com.marvelapp.entities.Results
 
 sealed class MarvelCharactersHomeViewStates {
 
@@ -9,6 +10,7 @@ sealed class MarvelCharactersHomeViewStates {
     data class SuccessState(val marvelCharacters: MarvelCharacters) : MarvelCharactersHomeViewStates()
     object HideLoadMoreMarvelCharactersViewState : MarvelCharactersHomeViewStates()
     object ShowLoadMoreMarvelCharactersViewState : MarvelCharactersHomeViewStates()
+    data class GoToMarvelCharacterDetailsPageState(val marvelCharacter: Results) : MarvelCharactersHomeViewStates()
 }
 
 sealed class MarvelCharactersSearchDialogViewStates {
@@ -18,8 +20,10 @@ sealed class MarvelCharactersSearchDialogViewStates {
     object HideLoadingIndicatorSearchForCharacterState : MarvelCharactersSearchDialogViewStates()
     object CloseSearchResultDialogState : MarvelCharactersSearchDialogViewStates()
     data class SuccessForSearchResultState(val marvelCharacters: MarvelCharacters) :
-        MarvelCharactersSearchDialogViewStates()
+            MarvelCharactersSearchDialogViewStates()
 
     object EmptyStateSearchResultDialog : MarvelCharactersSearchDialogViewStates()
+
+    data class GoToMarvelCharacterDetailsPageState(val marvelCharacter: Results) : MarvelCharactersSearchDialogViewStates()
 
 }

@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName
 data class Results(
 
         @SerializedName("id") val id: Int,
+        @SerializedName("title") val title : String?,
         @SerializedName("name") val name: String?,
         @SerializedName("description") val description: String?,
         @SerializedName("modified") val modified: String?,
@@ -20,21 +21,24 @@ data class Results(
         @SerializedName("urls") val urls: List<Urls>?
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-            parcel.readInt(),
-            parcel.readString(),
-            parcel.readString(),
-            parcel.readString(),
-            parcel.readParcelable(Thumbnail::class.java.classLoader),
-            parcel.readString(),
-            parcel.readParcelable(Comics::class.java.classLoader),
-            parcel.readParcelable(Series::class.java.classLoader),
-            parcel.readParcelable(Stories::class.java.classLoader),
-            parcel.readParcelable(Events::class.java.classLoader),
-            parcel.createTypedArrayList(Urls)) {
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readParcelable(Thumbnail::class.java.classLoader),
+        parcel.readString(),
+        parcel.readParcelable(Comics::class.java.classLoader),
+        parcel.readParcelable(Series::class.java.classLoader),
+        parcel.readParcelable(Stories::class.java.classLoader),
+        parcel.readParcelable(Events::class.java.classLoader),
+        parcel.createTypedArrayList(Urls)
+    ) {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(id)
+        parcel.writeString(title)
         parcel.writeString(name)
         parcel.writeString(description)
         parcel.writeString(modified)
@@ -60,4 +64,5 @@ data class Results(
             return arrayOfNulls(size)
         }
     }
+
 }

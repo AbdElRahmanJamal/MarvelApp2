@@ -15,6 +15,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,8 +24,9 @@ import com.jakewharton.rxbinding2.widget.RxTextView
 import com.marvelapp.MarvelBaseFragment
 import com.marvelapp.R
 import com.marvelapp.entities.Results
-import com.marvelapp.frameworks.apiservice.MarvelApiService
-import com.marvelapp.frameworks.apiservice.interceptor.ConnectivityInterceptor
+import com.marvelapp.frameworks.apiservice.apiFactory
+import com.marvelapp.marvelapprecview.EndlessOnScrollListener
+import com.marvelapp.marvelapprecview.MarvelCharactersAdapter
 import com.marvelapp.marvelcharacterhome.data.MarvelCharactersDataStore
 import com.marvelapp.marvelcharacterhome.data.MarvelCharactersRepository
 import com.marvelapp.marvelcharacterhome.domain.GetMarvelCharactersUseCase
@@ -32,15 +34,15 @@ import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersH
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersHomeViewStates
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersSearchDialogViewStates
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersSearchViewDialogIntents
-import com.marvelapp.marvelcharacterhome.presentation.view.marvelCharactersRecView.EndlessOnScrollListener
-import com.marvelapp.marvelcharacterhome.presentation.view.marvelCharactersRecView.MarvelCharactersAdapter
 import com.marvelapp.marvelcharacterhome.presentation.view.searchresultview.SearchResultDialog
-import com.marvelapp.marvelcharacterhome.presentation.view.searchresultview.SearchResultMarvelCharactersAdapter
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.fragment_home.*
+import org.koin.android.ext.android.get
+import org.koin.android.ext.android.startKoin
+import org.koin.standalone.StandAloneContext.stopKoin
 
 
 /**
@@ -56,7 +58,7 @@ class MarvelCharacters : MarvelBaseFragment() {
 
 
     private lateinit var marvelCharactersAdapter: MarvelCharactersAdapter
-    private var searchResultMarvelCharactersAdapter: SearchResultMarvelCharactersAdapter? = null
+    private var searchResultMarvelCharactersAdapter: MarvelCharactersAdapter? = null
     private lateinit var marvelCharactersViewModel: MarvelCharactersViewModel
     private lateinit var marvelCharactersViewModelFactory: MarvelCharactersViewModelFactory
     private var disposables: CompositeDisposable? = null
@@ -73,26 +75,27 @@ class MarvelCharacters : MarvelBaseFragment() {
         setMarvelCharactersHomeTittle()
         setHasOptionsMenu(true)
         initRecView()
+        startKoin(activity!!.applicationContext, listOf(apiFactory))
 
         marvelCharactersViewModelFactory = MarvelCharactersViewModelFactory(
-            GetMarvelCharactersUseCase(
-                MarvelCharactersRepository(
-                    MarvelCharactersDataStore(
-                        MarvelApiService(ConnectivityInterceptor(activity!!.applicationContext))
-                    )
+                GetMarvelCharactersUseCase(
+                        MarvelCharactersRepository(
+                                MarvelCharactersDataStore(
+                                        get()
+                                )
+                        )
                 )
-            )
         )
 
         marvelCharactersViewModel = ViewModelProviders.of(this, marvelCharactersViewModelFactory)
-            .get(MarvelCharactersViewModel::class.java)
+                .get(MarvelCharactersViewModel::class.java)
 
 
         val dispose = marvelCharactersViewModel
-            .getMarvelHomePageCharacters(getMarvelCharactersViewsIntents())
-            .subscribe {
-                renderHomeViewState(it)
-            }
+                .getMarvelHomePageCharacters(getMarvelCharactersViewsIntents())
+                .subscribe {
+                    renderHomeViewState(it)
+                }
         disposables!!.add(dispose)
     }
 
@@ -104,16 +107,23 @@ class MarvelCharacters : MarvelBaseFragment() {
             is MarvelCharactersHomeViewStates.ErrorState -> hideLoadingIndicator()
             is MarvelCharactersHomeViewStates.ShowLoadMoreMarvelCharactersViewState -> showLoadMoreLoading()
             is MarvelCharactersHomeViewStates.HideLoadMoreMarvelCharactersViewState -> hideLoadMoreLoading()
-
+            is MarvelCharactersHomeViewStates.GoToMarvelCharacterDetailsPageState -> goToMarvelDetailsPage(state.marvelCharacter)
 
         }
     }
 
+    private fun goToMarvelDetailsPage(marvelCharacter: Results) {
+        val goToMarvelDetails = MarvelCharactersDirections.actionFromHomeToMarvelCharacterDetails(marvelCharacter)
+        Navigation.findNavController(view!!).navigate(goToMarvelDetails)
+    }
+
     private fun getMarvelCharactersViewsIntents() = Observable.merge(
-        onHomePageStart(), onLoadMoreMarvelCharacters()
+            onHomePageStart(), onLoadMoreMarvelCharacters(), onRecViewItemClicked()
     )
 
     private fun onHomePageStart() = Observable.just(MarvelCharactersHomeViewIntents.LoadingMarvelCharactersIntent)
+
+    private fun onRecViewItemClicked() = marvelCharactersAdapter.getGoToMarvelDetailsPageIntent()
 
     private fun onLoadMoreMarvelCharacters() = loadMoreMarvelCharacters
 
@@ -125,20 +135,26 @@ class MarvelCharacters : MarvelBaseFragment() {
 
     private fun setLoadingSearchDialogVisibility(visibility: Int) {
         searchResultDialog!!.findViewById<LinearLayout>(R.id.search_dialog_loading_layout).visibility =
-            visibility
+                visibility
     }
 
     private fun handleSearchForCharacterDialogViewOnSuccessState(results: List<Results>) {
         setLoadingSearchDialogVisibility(View.GONE)
-        searchResultMarvelCharactersAdapter!!.setMarvelCharactersSearchResult(results)
+        searchResultMarvelCharactersAdapter!!.setMarvelCharacters(results)
 
     }
 
     private fun getSearchDialogIntents() = Observable.merge(
-        onSearchIconClickedIntent(),
-        onSearchFieldChangeOfSearchDialog(),
-        onCloseButtonOfSearchDialogClicked()
+            onRecViewItemClickedSearchDialog(),
+            onSearchIconClickedIntent(),
+            onSearchFieldChangeOfSearchDialog(),
+            onCloseButtonOfSearchDialogClicked()
+
     )
+
+    private fun onRecViewItemClickedSearchDialog() =
+            searchResultMarvelCharactersAdapter!!.getGoToMarvelDetailsPageIntentFromSearchDialog()
+
 
     private fun onSearchIconClickedIntent() = onSearchIconClicked
 
@@ -146,7 +162,7 @@ class MarvelCharacters : MarvelBaseFragment() {
         val searchFieldOfSearchDialog: TextView = searchResultDialog!!.findViewById(R.id.search_edit_txt)
         return RxTextView.textChanges(searchFieldOfSearchDialog).map {
             MarvelCharactersSearchViewDialogIntents
-                .SearchFieldChangeOfSearchDialogIntent(it.toString())
+                    .SearchFieldChangeOfSearchDialogIntent(it.toString())
         }
     }
 
@@ -158,7 +174,7 @@ class MarvelCharacters : MarvelBaseFragment() {
     }
 
     private fun initRecView() {
-        marvelCharactersAdapter = MarvelCharactersAdapter()
+        marvelCharactersAdapter = MarvelCharactersAdapter(R.layout.marvel_home_ticket)
         marvel_character_recView?.let {
             it.layoutManager = LinearLayoutManager(context)
             it.adapter = marvelCharactersAdapter
@@ -166,24 +182,26 @@ class MarvelCharacters : MarvelBaseFragment() {
             it.addOnScrollListener(object : EndlessOnScrollListener() {
                 override fun onScrolledToEnd() {
                     loadMoreMarvelCharacters.onNext(
-                        MarvelCharactersHomeViewIntents
-                            .LoadingMoreMarvelCharactersIntent(offset = it.adapter!!.itemCount)
+                            MarvelCharactersHomeViewIntents
+                                    .LoadingMoreMarvelCharactersIntent(offset = it.adapter!!.itemCount)
                     )
                 }
             })
         }
+
     }
 
 
     private fun initRecViewForSearchResultDialog() {
         if (searchResultMarvelCharactersAdapter == null)
-            searchResultMarvelCharactersAdapter = SearchResultMarvelCharactersAdapter()
+            searchResultMarvelCharactersAdapter =
+                    MarvelCharactersAdapter(R.layout.marvel_search_result_ticket)
 
         val itemDecoration = DividerItemDecoration(context!!, LinearLayoutManager.VERTICAL)
         itemDecoration.setDrawable(context!!.resources.getDrawable(R.drawable.partial_white_divider, null))
 
         val marvelCharacterRecViewSearchResult =
-            searchResultDialog!!.findViewById<RecyclerView>(R.id.marvel_character_recView_search_result)
+                searchResultDialog!!.findViewById<RecyclerView>(R.id.marvel_character_recView_search_result)
         marvelCharacterRecViewSearchResult?.let {
             it.layoutManager = LinearLayoutManager(context)
             it.adapter = searchResultMarvelCharactersAdapter
@@ -229,26 +247,30 @@ class MarvelCharacters : MarvelBaseFragment() {
 
     private fun handleSearchDialogViewStates() {
         disposeSearchDialogObservable = marvelCharactersViewModel
-            .getMarvelCharactersSearchDialogResult(getSearchDialogIntents())
-            .subscribe {
-                renderSearchDialogViewState(it)
-            }
+                .getMarvelCharactersSearchDialogResult(getSearchDialogIntents())
+                .subscribe {
+                    renderSearchDialogViewState(it)
+                }
     }
 
     private fun renderSearchDialogViewState(state: MarvelCharactersSearchDialogViewStates) {
         when (state) {
             is MarvelCharactersSearchDialogViewStates.ShowSearchResultDialogState -> showSearchResultDialog()
             is MarvelCharactersSearchDialogViewStates.ShowLoadingIndicatorSearchForCharacterState -> setLoadingSearchDialogVisibility(
-                View.VISIBLE
+                    View.VISIBLE
             )
             is MarvelCharactersSearchDialogViewStates.HideLoadingIndicatorSearchForCharacterState -> setLoadingSearchDialogVisibility(
-                View.GONE
+                    View.GONE
             )
             is MarvelCharactersSearchDialogViewStates.CloseSearchResultDialogState -> hideSearchResultDialog()
             is MarvelCharactersSearchDialogViewStates.SuccessForSearchResultState ->
                 handleSearchForCharacterDialogViewOnSuccessState(state.marvelCharacters.data.results)
             is MarvelCharactersSearchDialogViewStates.EmptyStateSearchResultDialog ->
                 handleSearchForCharacterDialogViewOnSuccessState(emptyList())
+            is MarvelCharactersSearchDialogViewStates.GoToMarvelCharacterDetailsPageState -> {
+                hideSearchResultDialog()
+                goToMarvelDetailsPage(state.marvelCharacter)
+            }
         }
 
     }
@@ -256,10 +278,10 @@ class MarvelCharacters : MarvelBaseFragment() {
     private fun changeSearchIconOfSearchView(searchView: SearchView) {
         val searchIcon: ImageView = searchView.findViewById(R.id.search_button)
         searchIcon.setImageDrawable(
-            ContextCompat.getDrawable(
-                activity!!,
-                R.drawable.ic_search_magnifier_interface_symbol
-            )
+                ContextCompat.getDrawable(
+                        activity!!,
+                        R.drawable.ic_search_magnifier_interface_symbol
+                )
         )
     }
 
@@ -285,8 +307,10 @@ class MarvelCharacters : MarvelBaseFragment() {
             searchResultDialog = null
         }
     }
+
     override fun onStop() {
         super.onStop()
+        stopKoin()
         if (!disposables!!.isDisposed)
             disposables!!.dispose()
     }

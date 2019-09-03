@@ -1,14 +1,13 @@
 package com.marvelapp.marvelcharacterhome.data
 
-import com.marvelapp.frameworks.apiservice.MarvelApiService
 import com.marvelapp.entities.MarvelCharacters
 import io.reactivex.Single
 
-class MarvelCharactersDataStore(private val marvelApiService: MarvelApiService) {
+class MarvelCharactersDataStore(private val marvelHomePageApis: MarvelHomePageApis) {
 
     fun getMarvelCharacters(limit: Int, offset: Int): Single<MarvelCharacters> =
-        marvelApiService.getMarvelCharacters(limit, offset)
+        marvelHomePageApis.getMarvelCharacters(limit, offset)
 
     fun getSearchMarvelCharactersList(name: String): Single<MarvelCharacters> =
-        marvelApiService.getSearchMarvelCharactersList(name)
+        marvelHomePageApis.getSearchMarvelCharactersList(name)
 }
