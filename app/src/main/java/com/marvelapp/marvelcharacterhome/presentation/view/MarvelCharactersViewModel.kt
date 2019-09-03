@@ -23,6 +23,9 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
                 is MarvelCharactersHomeViewIntents.LoadingMoreMarvelCharactersIntent -> {
                     getLoadMoreMarvelCharacters(limit = it.limit, offset = it.offset)
                 }
+                is MarvelCharactersHomeViewIntents.GoToMarvelCharacterDetailsPageIntent -> {
+                    Observable.just(MarvelCharactersHomeViewStates.GoToMarvelCharacterDetailsPageState(it.marvelCharacter))
+                }
             }
         }.distinctUntilChanged()
     }
@@ -47,6 +50,9 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
                 }
                 is MarvelCharactersSearchViewDialogIntents.CloseButtonOfSearchDialogClickedIntent -> {
                     Observable.just(MarvelCharactersSearchDialogViewStates.CloseSearchResultDialogState)
+                }
+                is MarvelCharactersSearchViewDialogIntents.GoToMarvelCharacterDetailsPageIntent -> {
+                    Observable.just(MarvelCharactersSearchDialogViewStates.GoToMarvelCharacterDetailsPageState(it.marvelCharacter))
                 }
             }
         }.distinctUntilChanged()
