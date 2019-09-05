@@ -11,14 +11,14 @@ sealed class MarvelCharactersHomeViewStates {
     object HideLoadMoreMarvelCharactersViewState : MarvelCharactersHomeViewStates()
     object ShowLoadMoreMarvelCharactersViewState : MarvelCharactersHomeViewStates()
     data class GoToMarvelCharacterDetailsPageState(val marvelCharacter: Results) : MarvelCharactersHomeViewStates()
+    object ShowSearchResultDialogState : MarvelCharactersHomeViewStates()
+    object CloseSearchResultDialogState : MarvelCharactersHomeViewStates()
 }
 
 sealed class MarvelCharactersSearchDialogViewStates {
 
-    object ShowSearchResultDialogState : MarvelCharactersSearchDialogViewStates()
     object ShowLoadingIndicatorSearchForCharacterState : MarvelCharactersSearchDialogViewStates()
     object HideLoadingIndicatorSearchForCharacterState : MarvelCharactersSearchDialogViewStates()
-    object CloseSearchResultDialogState : MarvelCharactersSearchDialogViewStates()
     data class SuccessForSearchResultState(val marvelCharacters: MarvelCharacters) :
             MarvelCharactersSearchDialogViewStates()
 

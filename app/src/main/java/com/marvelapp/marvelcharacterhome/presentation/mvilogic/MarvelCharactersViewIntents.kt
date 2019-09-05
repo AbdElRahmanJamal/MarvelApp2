@@ -11,15 +11,16 @@ sealed class MarvelCharactersHomeViewIntents {
     data class GoToMarvelCharacterDetailsPageIntent(val marvelCharacter: Results) :
         MarvelCharactersHomeViewIntents()
 
+    object SearchIconClickedIntent : MarvelCharactersHomeViewIntents()
+    object CloseButtonOfSearchDialogClickedIntent : MarvelCharactersHomeViewIntents()
 }
 
 sealed class MarvelCharactersSearchViewDialogIntents {
 
-    object SearchIconClickedIntent : MarvelCharactersSearchViewDialogIntents()
     data class SearchFieldChangeOfSearchDialogIntent(val searchName: String = "") :
         MarvelCharactersSearchViewDialogIntents()
 
-    object CloseButtonOfSearchDialogClickedIntent : MarvelCharactersSearchViewDialogIntents()
+
     data class GoToMarvelCharacterDetailsPageIntent(val marvelCharacter: Results) :
         MarvelCharactersSearchViewDialogIntents()
 
