@@ -7,12 +7,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.jakewharton.rxbinding2.view.RxView
 import com.marvelapp.R
 import com.marvelapp.entities.Results
 import com.marvelapp.frameworks.downloadImage
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersHomeViewIntents
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersSearchViewDialogIntents
-import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.marvel_character_details_single_row_ticket.view.*
 import kotlinx.android.synthetic.main.marvel_home_ticket.view.*
 import kotlinx.android.synthetic.main.marvel_search_result_ticket.view.*
@@ -22,9 +23,9 @@ class MarvelCharactersAdapter(private val layout: Int) :
 
     private var marvelCharacters: MutableList<Results> = mutableListOf()
     private lateinit var context: Context
-    private val goToMarvelDetailsPage = BehaviorSubject.create<MarvelCharactersHomeViewIntents>()
+    private val goToMarvelDetailsPage = PublishSubject.create<MarvelCharactersHomeViewIntents>()
     private val goToMarvelDetailsPageFromSearchDialog =
-        BehaviorSubject.create<MarvelCharactersSearchViewDialogIntents>()
+        PublishSubject.create<MarvelCharactersSearchViewDialogIntents>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarvelCharactersViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -39,17 +40,15 @@ class MarvelCharactersAdapter(private val layout: Int) :
             val imageURL = marvelCharacter.thumbnail.path + "." + marvelCharacter.thumbnail.extension
             downloadImage(context, imageURL, holder.charactersImage)
             holder.charactersName.text = marvelCharacter.name ?: marvelCharacter.title
-            holder.itemView.setOnClickListener {
-                if (layout == R.layout.marvel_home_ticket) goToMarvelDetailsPage.onNext(
-                    MarvelCharactersHomeViewIntents.GoToMarvelCharacterDetailsPageIntent(
-                        marvelCharacter
-                    )
-                )
-                else goToMarvelDetailsPageFromSearchDialog.onNext(
-                    MarvelCharactersSearchViewDialogIntents.GoToMarvelCharacterDetailsPageIntent(
-                        marvelCharacter
-                    )
-                )
+
+            if (layout == R.layout.marvel_home_ticket) {
+                RxView.clicks(holder.itemView).map {
+                    MarvelCharactersHomeViewIntents.GoToMarvelCharacterDetailsPageIntent(marvelCharacter)
+                }.subscribe(goToMarvelDetailsPage)
+            } else {
+                RxView.clicks(holder.itemView).map {
+                    MarvelCharactersSearchViewDialogIntents.GoToMarvelCharacterDetailsPageIntent(marvelCharacter)
+                }.subscribe(goToMarvelDetailsPageFromSearchDialog)
             }
         }
 

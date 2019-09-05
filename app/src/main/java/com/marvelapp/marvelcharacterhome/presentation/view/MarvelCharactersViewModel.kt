@@ -26,6 +26,12 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
                 is MarvelCharactersHomeViewIntents.GoToMarvelCharacterDetailsPageIntent -> {
                     Observable.just(MarvelCharactersHomeViewStates.GoToMarvelCharacterDetailsPageState(it.marvelCharacter))
                 }
+                is MarvelCharactersHomeViewIntents.SearchIconClickedIntent -> {
+                    Observable.just(MarvelCharactersHomeViewStates.ShowSearchResultDialogState)
+                }
+                is MarvelCharactersHomeViewIntents.CloseButtonOfSearchDialogClickedIntent -> {
+                    Observable.just(MarvelCharactersHomeViewStates.CloseSearchResultDialogState)
+                }
             }
         }.distinctUntilChanged()
     }
@@ -35,9 +41,7 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
 
         return intents.flatMap {
             when (it) {
-                is MarvelCharactersSearchViewDialogIntents.SearchIconClickedIntent -> {
-                    Observable.just(MarvelCharactersSearchDialogViewStates.ShowSearchResultDialogState)
-                }
+
                 is MarvelCharactersSearchViewDialogIntents.SearchFieldChangeOfSearchDialogIntent -> {
                     Observable.just(it.searchName).flatMap { searchName ->
                         if (searchName.isEmpty()) {
@@ -48,9 +52,7 @@ class MarvelCharactersViewModel(private val getMarvelCharactersUseCase: GetMarve
                     }
 
                 }
-                is MarvelCharactersSearchViewDialogIntents.CloseButtonOfSearchDialogClickedIntent -> {
-                    Observable.just(MarvelCharactersSearchDialogViewStates.CloseSearchResultDialogState)
-                }
+
                 is MarvelCharactersSearchViewDialogIntents.GoToMarvelCharacterDetailsPageIntent -> {
                     Observable.just(MarvelCharactersSearchDialogViewStates.GoToMarvelCharacterDetailsPageState(it.marvelCharacter))
                 }

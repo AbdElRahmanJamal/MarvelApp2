@@ -17,7 +17,7 @@ import com.marvelapp.marvelcharacterdetails.presentation.mvilogic.MarvelCharacte
 import com.marvelapp.marvelcharacterdetails.presentation.mvilogic.MarvelCharactersDetailsViewStates
 import com.marvelapp.marvelcharacterdetails.presentation.view.detailspageadapter.MarvelCharacterDetailsPageAdapter
 import io.reactivex.Observable
-import io.reactivex.functions.Consumer
+import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.marvel_character_details_fragment.*
 import org.koin.android.ext.android.get
 
@@ -30,6 +30,7 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
     private lateinit var marvelCharacterDetailsPageAdapter: MarvelCharacterDetailsPageAdapter
     private lateinit var marvelCharacterDetailsArgs: MarvelCharacterDetailsArgs
     private lateinit var marvelCharacterData: Results
+    private var disposables: CompositeDisposable? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = super.onCreateView(inflater, container, savedInstanceState)
@@ -43,7 +44,7 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
+        disposables = CompositeDisposable()
         marvelCharacterDetailsViewModelFactory = MarvelCharacterDetailsViewModelFactory(
                 GetMarvelCharacterDetailsUseCase(
                         MarvelCharacterDetailsRepository(MarvelCharacterDetailsDataStore(get()))
@@ -79,11 +80,11 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
             character_desc_title_details_page.text = getString(R.string.description)
         }
 
-        viewModel.startMarvelCharacterDetailsPage(getMarvelCharacterDetailsIntent())
-                .subscribe(Consumer {
+        disposables!!.add(viewModel.startMarvelCharacterDetailsPage(getMarvelCharacterDetailsIntent())
+                .subscribe {
                     renderMarvelCharacterDetailsPageView(it)
-                })
-
+                }
+        )
 
     }
 
@@ -113,4 +114,11 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
 
     private fun onDetailsPageStart() = Observable.just(MarvelCharactersDetailsPageViewIntents.OnDetailsPageStartIntent(marvelCharacterData.id))
 
+    override fun onStop() {
+        super.onStop()
+        if (!disposables!!.isDisposed) {
+            disposables!!.dispose()
+            disposables!!.clear()
+        }
+    }
 }
