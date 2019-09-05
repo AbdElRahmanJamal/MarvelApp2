@@ -260,6 +260,7 @@ class MarvelCharacters : MarvelBaseFragment() {
     override fun onStop() {
         super.onStop()
         stopKoin()
+        searchResultDialog = null
         if (!disposables!!.isDisposed) {
             disposables!!.dispose()
             disposables!!.clear()
