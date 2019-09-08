@@ -24,8 +24,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-}
+    defaultConfig {
+        buildConfigField 'String', 'API_KEY', API_KEY
+        buildConfigField 'String', 'HASH', HASH
 
+    }
+}
 androidExtensions {
     experimental = true
 }
@@ -83,3 +87,4 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.3.0-alpha02'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0-alpha02'
 }
+

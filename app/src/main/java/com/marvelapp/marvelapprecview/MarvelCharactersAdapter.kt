@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.jakewharton.rxbinding2.view.RxView
 import com.marvelapp.R
 import com.marvelapp.entities.Results
 import com.marvelapp.frameworks.downloadImage
@@ -40,16 +39,22 @@ class MarvelCharactersAdapter(private val layout: Int) :
             val imageURL = marvelCharacter.thumbnail.path + "." + marvelCharacter.thumbnail.extension
             downloadImage(context, imageURL, holder.charactersImage)
             holder.charactersName.text = marvelCharacter.name ?: marvelCharacter.title
-
-            if (layout == R.layout.marvel_home_ticket) {
-                RxView.clicks(holder.itemView).map {
-                    MarvelCharactersHomeViewIntents.GoToMarvelCharacterDetailsPageIntent(marvelCharacter)
-                }.subscribe(goToMarvelDetailsPage)
-            } else {
-                RxView.clicks(holder.itemView).map {
-                    MarvelCharactersSearchViewDialogIntents.GoToMarvelCharacterDetailsPageIntent(marvelCharacter)
-                }.subscribe(goToMarvelDetailsPageFromSearchDialog)
+            holder.itemView.setOnClickListener {
+                if (layout == R.layout.marvel_home_ticket) {
+                    goToMarvelDetailsPage.onNext(
+                        MarvelCharactersHomeViewIntents.GoToMarvelCharacterDetailsPageIntent(
+                            marvelCharacter
+                        )
+                    )
+                } else {
+                    goToMarvelDetailsPageFromSearchDialog.onNext(
+                        MarvelCharactersSearchViewDialogIntents.GoToMarvelCharacterDetailsPageIntent(
+                            marvelCharacter
+                        )
+                    )
+                }
             }
+
         }
 
     }
