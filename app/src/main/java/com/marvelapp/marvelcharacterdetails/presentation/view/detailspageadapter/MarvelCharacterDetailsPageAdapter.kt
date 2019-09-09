@@ -16,12 +16,15 @@ import kotlinx.android.synthetic.main.marvel_character_details_ticket.view.*
 class MarvelCharacterDetailsPageAdapter :
     RecyclerView.Adapter<MarvelCharacterDetailsPageAdapter.MarvelCharactersViewHolder>() {
 
+    private val marvelCharactersAdapter: MarvelCharactersAdapter =
+        MarvelCharactersAdapter(R.layout.marvel_character_details_single_row_ticket)
     private var marvelCharactersDetailsPageData: MutableMap<String, List<Results>> = mutableMapOf()
     private lateinit var context: Context
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarvelCharactersViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         context = parent.context
+
         val view = inflater.inflate(R.layout.marvel_character_details_ticket, parent, false)
         return MarvelCharactersViewHolder(view)
     }
@@ -30,7 +33,7 @@ class MarvelCharacterDetailsPageAdapter :
         val marvelCharacterDetailsTitle = marvelCharactersDetailsPageData.keys.toList()[position]
         val marvelCharacterDetailsResultsList = marvelCharactersDetailsPageData.values.toList()[position]
 
-        val marvelCharactersAdapter = MarvelCharactersAdapter(R.layout.marvel_character_details_single_row_ticket)
+
         if (marvelCharacterDetailsResultsList.isNotEmpty()) {
             holder.detailsPageTitle.text = marvelCharacterDetailsTitle
 
@@ -42,6 +45,8 @@ class MarvelCharacterDetailsPageAdapter :
         }
     }
 
+    fun getShowMarvelCharacterImages() =
+        marvelCharactersAdapter.getShowMarvelCharacterImages()
 
     internal fun setMarvelCharactersDetailsPageData(marvelCharacters: MutableMap<String, List<Results>>) {
         this.marvelCharactersDetailsPageData.clear()

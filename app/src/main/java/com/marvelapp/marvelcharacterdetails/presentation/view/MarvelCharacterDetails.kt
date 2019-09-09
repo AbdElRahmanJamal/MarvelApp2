@@ -16,6 +16,7 @@ import com.marvelapp.marvelcharacterdetails.domain.GetMarvelCharacterDetailsUseC
 import com.marvelapp.marvelcharacterdetails.presentation.mvilogic.MarvelCharactersDetailsPageViewIntents
 import com.marvelapp.marvelcharacterdetails.presentation.mvilogic.MarvelCharactersDetailsViewStates
 import com.marvelapp.marvelcharacterdetails.presentation.view.detailspageadapter.MarvelCharacterDetailsPageAdapter
+import com.marvelapp.marvelcharacterdetails.presentation.view.marvelcharacterimagesdialog.MarvelCharacterImagesDialog
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.marvel_character_details_fragment.*
@@ -31,6 +32,7 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
     private lateinit var marvelCharacterDetailsArgs: MarvelCharacterDetailsArgs
     private lateinit var marvelCharacterData: Results
     private var disposables: CompositeDisposable? = null
+    private var marvelCharacterImagesDialog: MarvelCharacterImagesDialog? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = super.onCreateView(inflater, container, savedInstanceState)
@@ -45,14 +47,15 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         disposables = CompositeDisposable()
+        marvelCharacterImagesDialog = MarvelCharacterImagesDialog.getInstance(context!!)
         marvelCharacterDetailsViewModelFactory = MarvelCharacterDetailsViewModelFactory(
-                GetMarvelCharacterDetailsUseCase(
-                        MarvelCharacterDetailsRepository(MarvelCharacterDetailsDataStore(get()))
-                )
+            GetMarvelCharacterDetailsUseCase(
+                MarvelCharacterDetailsRepository(MarvelCharacterDetailsDataStore(get()))
+            )
         )
 
         viewModel = ViewModelProviders.of(this, marvelCharacterDetailsViewModelFactory)
-                .get(MarvelCharacterDetailsViewModel::class.java)
+            .get(MarvelCharacterDetailsViewModel::class.java)
 
         initRecView()
 
@@ -74,34 +77,48 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
 
             character_name_title_page.text = getString(R.string.name)
             character_name_content_page.text = marvelCharacterData.title
-                    ?: marvelCharacterData.name
+                ?: marvelCharacterData.name
 
             character_desc_content_details_page.text = marvelCharacterData.description
             character_desc_title_details_page.text = getString(R.string.description)
         }
 
         disposables!!.add(viewModel.startMarvelCharacterDetailsPage(getMarvelCharacterDetailsIntent())
-                .subscribe {
-                    renderMarvelCharacterDetailsPageView(it)
-                }
+            .subscribe {
+                renderMarvelCharacterDetailsPageView(it)
+            }
         )
 
     }
 
+    private fun getMarvelCharacterDetailsIntent() =
+        Observable.merge(
+            onDetailsPageStart(),
+            onDetailsItemClicked(),
+            marvelCharacterImagesDialog!!.onCloseButtonClicked()
+            , marvelCharacterImagesDialog!!.onScrollItem()
+        )
+
     private fun renderMarvelCharacterDetailsPageView(state: MarvelCharactersDetailsViewStates) {
         when (state) {
 
-            is MarvelCharactersDetailsViewStates.OnLoadingPageDetailsState -> show_more_loading.visibility = View.VISIBLE
+            is MarvelCharactersDetailsViewStates.OnLoadingPageDetailsState -> show_more_loading.visibility =
+                View.VISIBLE
             is MarvelCharactersDetailsViewStates.OnSuccessPageDetailsState -> {
                 marvelCharacterDetailsPageAdapter.setMarvelCharactersDetailsPageData(state.marvelCharacterDetailsModel.getMarvelDetailsModel())
                 show_more_loading.visibility = View.GONE
             }
             is MarvelCharactersDetailsViewStates.OnErrorPageDetailsState -> show_more_loading.visibility = View.GONE
 
+            is MarvelCharactersDetailsViewStates.OpenMarvelCharacterImagesDialogState -> {
+                marvelCharacterImagesDialog!!.showDialog()
+            }
+            is MarvelCharactersDetailsViewStates.CloseMarvelCharacterImagesDialogState -> {
+                marvelCharacterImagesDialog!!.hideSearchResultDialog()
+            }
+
         }
     }
-
-    private fun getMarvelCharacterDetailsIntent() = onDetailsPageStart()
 
     private fun initRecView() {
         marvelCharacterDetailsPageAdapter = MarvelCharacterDetailsPageAdapter()
@@ -112,7 +129,10 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
 
     }
 
-    private fun onDetailsPageStart() = Observable.just(MarvelCharactersDetailsPageViewIntents.OnDetailsPageStartIntent(marvelCharacterData.id))
+    private fun onDetailsPageStart() =
+        Observable.just(MarvelCharactersDetailsPageViewIntents.OnDetailsPageStartIntent(marvelCharacterData.id))
+
+    private fun onDetailsItemClicked() = marvelCharacterDetailsPageAdapter.getShowMarvelCharacterImages()
 
     override fun onStop() {
         super.onStop()

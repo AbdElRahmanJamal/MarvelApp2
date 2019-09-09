@@ -175,7 +175,7 @@ class MarvelCharacters : MarvelBaseFragment() {
         (activity as? AppCompatActivity)?.supportActionBar?.subtitle = null
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater?.inflate(R.menu.search_menu, menu)
 
