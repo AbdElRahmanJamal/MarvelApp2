@@ -1,6 +1,9 @@
 package com.marvelapp.entities
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.android.parcel.Parcelize
 
+@Parcelize
 data class Data (
 
 	@SerializedName("offset") val offset : Int,
@@ -8,4 +11,4 @@ data class Data (
 	@SerializedName("total") val total : Int,
 	@SerializedName("count") val count : Int,
 	@SerializedName("results") val results : List<Results>
-)
+): Parcelable

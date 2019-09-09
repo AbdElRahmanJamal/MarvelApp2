@@ -2,6 +2,8 @@ package com.marvelapp.frameworks.apiservice
 
 
 import com.google.gson.GsonBuilder
+import com.marvelapp.BuildConfig.API_KEY
+import com.marvelapp.BuildConfig.HASH
 import com.marvelapp.frameworks.apiservice.interceptor.ConnectivityInterceptor
 import com.marvelapp.marvelcharacterdetails.data.MarvelDetailsPageApis
 import com.marvelapp.marvelcharacterhome.data.MarvelHomePageApis
