@@ -1,5 +1,6 @@
 package com.marvelapp.marvelapprecview
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.marvelapp.R
 import com.marvelapp.entities.Results
 import com.marvelapp.frameworks.downloadImage
-import com.marvelapp.marvelcharacterdetails.presentation.mvilogic.MarvelCharactersDetailsPageViewIntents
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersHomeViewIntents
 import com.marvelapp.marvelcharacterhome.presentation.mvilogic.MarvelCharactersSearchViewDialogIntents
 import io.reactivex.subjects.PublishSubject
@@ -30,7 +30,7 @@ class MarvelCharactersAdapter(private val layout: Int) :
         PublishSubject.create<MarvelCharactersSearchViewDialogIntents>()
 
     private val showMarvelCharacterImages =
-        PublishSubject.create<MarvelCharactersDetailsPageViewIntents>()
+        PublishSubject.create<Boolean>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarvelCharactersViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -39,30 +39,30 @@ class MarvelCharactersAdapter(private val layout: Int) :
         return MarvelCharactersViewHolder(view)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: MarvelCharactersViewHolder, position: Int) {
         val marvelCharacter = marvelCharacters[position]
         marvelCharacter.thumbnail?.let {
             val imageURL = marvelCharacter.thumbnail.path + "." + marvelCharacter.thumbnail.extension
             downloadImage(context, imageURL, holder.charactersImage)
             if (layout == R.layout.marvel_character_mages_ticket) {
-                holder.charactersName.text = "${position+1} of $itemCount"
+                holder.charactersName.text = "${position + 1} / $itemCount"
+                holder.charactersTitle!!.text=marvelCharacter.name ?: marvelCharacter.title
             } else {
                 holder.charactersName.text = marvelCharacter.name ?: marvelCharacter.title
                 holder.itemView.setOnClickListener {
-                    if (layout == R.layout.marvel_home_ticket) {
-                        goToMarvelDetailsPage.onNext(
+                    when (layout) {
+                        R.layout.marvel_home_ticket -> goToMarvelDetailsPage.onNext(
                             MarvelCharactersHomeViewIntents.GoToMarvelCharacterDetailsPageIntent(
                                 marvelCharacter
                             )
                         )
-                    } else if (layout == R.layout.marvel_search_result_ticket) {
-                        goToMarvelDetailsPageFromSearchDialog.onNext(
+                        R.layout.marvel_search_result_ticket -> goToMarvelDetailsPageFromSearchDialog.onNext(
                             MarvelCharactersSearchViewDialogIntents.GoToMarvelCharacterDetailsPageIntent(
                                 marvelCharacter
                             )
                         )
-                    } else if (layout == R.layout.marvel_character_details_single_row_ticket) {
-                        showMarvelCharacterImages.onNext(MarvelCharactersDetailsPageViewIntents.OnDetailItemClickedIntent)
+                        R.layout.marvel_character_details_single_row_ticket -> showMarvelCharacterImages.onNext(true)
                     }
                 }
 
@@ -75,9 +75,7 @@ class MarvelCharactersAdapter(private val layout: Int) :
     fun getShowMarvelCharacterImages() = showMarvelCharacterImages
 
     internal fun setMarvelCharacters(marvelCharacters: List<Results>) {
-        if (layout == R.layout.marvel_search_result_ticket ||
-            layout == R.layout.marvel_character_details_ticket
-        ) this.marvelCharacters.clear()
+        if (layout != R.layout.marvel_home_ticket) this.marvelCharacters.clear()
         this.marvelCharacters.addAll(marvelCharacters)
         notifyDataSetChanged()
     }
@@ -101,6 +99,9 @@ class MarvelCharactersAdapter(private val layout: Int) :
                 R.layout.marvel_character_details_single_row_ticket -> itemView.character_name_details_page
                 else -> itemView.text_marvel_character
             }
+        val charactersTitle: TextView? =
+            if (layout == R.layout.marvel_character_mages_ticket) itemView.marvel_title else null
+
 
     }
 }

@@ -10,16 +10,21 @@ import androidx.recyclerview.widget.RecyclerView
 import com.marvelapp.R
 import com.marvelapp.entities.Results
 import com.marvelapp.marvelapprecview.MarvelCharactersAdapter
+import com.marvelapp.marvelcharacterdetails.presentation.mvilogic.MarvelCharactersDetailsPageViewIntents
+import io.reactivex.disposables.Disposable
+import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.marvel_character_details_ticket.view.*
 
 
 class MarvelCharacterDetailsPageAdapter :
     RecyclerView.Adapter<MarvelCharacterDetailsPageAdapter.MarvelCharactersViewHolder>() {
 
-    private val marvelCharactersAdapter: MarvelCharactersAdapter =
-        MarvelCharactersAdapter(R.layout.marvel_character_details_single_row_ticket)
+
     private var marvelCharactersDetailsPageData: MutableMap<String, List<Results>> = mutableMapOf()
     private lateinit var context: Context
+    private val showMarvelCharacterImages =
+        PublishSubject.create<MarvelCharactersDetailsPageViewIntents>()
+    private var disposable: Disposable? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarvelCharactersViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -32,23 +37,42 @@ class MarvelCharacterDetailsPageAdapter :
     override fun onBindViewHolder(holder: MarvelCharactersViewHolder, position: Int) {
         val marvelCharacterDetailsTitle = marvelCharactersDetailsPageData.keys.toList()[position]
         val marvelCharacterDetailsResultsList = marvelCharactersDetailsPageData.values.toList()[position]
-
+        val marvelCharactersAdapter = MarvelCharactersAdapter(R.layout.marvel_character_details_single_row_ticket)
 
         if (marvelCharacterDetailsResultsList.isNotEmpty()) {
             holder.detailsPageTitle.text = marvelCharacterDetailsTitle
 
-            holder.detailsPageRecView.let {
-                it.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                it.adapter = marvelCharactersAdapter
+
+            marvelCharactersAdapter.apply {
+                setMarvelCharacters(marvelCharacterDetailsResultsList)
             }
-            marvelCharactersAdapter.setMarvelCharacters(marvelCharacterDetailsResultsList)
+            holder.detailsPageRecView.apply {
+                layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                adapter = marvelCharactersAdapter
+            }
+            val subscribe = marvelCharactersAdapter.getShowMarvelCharacterImages().subscribe {
+                showMarvelCharacterImages.onNext(
+                    MarvelCharactersDetailsPageViewIntents.OnDetailItemClickedIntent(
+                        marvelCharactersDetailsPageData.values.toList()[position],
+                        position
+                    )
+                )
+            }
         }
     }
 
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        if (disposable!!.isDisposed)
+            disposable!!.dispose()
+
+    }
+
     fun getShowMarvelCharacterImages() =
-        marvelCharactersAdapter.getShowMarvelCharacterImages()
+        showMarvelCharacterImages
 
     internal fun setMarvelCharactersDetailsPageData(marvelCharacters: MutableMap<String, List<Results>>) {
+
         this.marvelCharactersDetailsPageData.clear()
         this.marvelCharactersDetailsPageData.putAll(marvelCharacters)
         notifyDataSetChanged()

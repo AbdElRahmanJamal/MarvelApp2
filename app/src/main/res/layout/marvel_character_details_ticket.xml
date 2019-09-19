@@ -10,7 +10,7 @@
         android:id="@+id/recView_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
+        android:padding="3dp"
         android:textColor="#ff0000"
         tools:text="title" />
 
@@ -19,6 +19,6 @@
         android:id="@+id/marvel_character_recView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="3dp"
         tools:listitem="@layout/marvel_character_details_single_row_ticket" />
 </LinearLayout>
