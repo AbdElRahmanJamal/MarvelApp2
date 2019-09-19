@@ -33,6 +33,7 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
     private lateinit var marvelCharacterData: Results
     private var disposables: CompositeDisposable? = null
     private var marvelCharacterImagesDialog: MarvelCharacterImagesDialog? = null
+    private var marvelCharacters: MutableMap<String, List<Results>>? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = super.onCreateView(inflater, container, savedInstanceState)
@@ -96,7 +97,6 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
             onDetailsPageStart(),
             onDetailsItemClicked(),
             marvelCharacterImagesDialog!!.onCloseButtonClicked()
-            , marvelCharacterImagesDialog!!.onScrollItem()
         )
 
     private fun renderMarvelCharacterDetailsPageView(state: MarvelCharactersDetailsViewStates) {
@@ -105,13 +105,14 @@ class MarvelCharacterDetails : MarvelBaseFragment() {
             is MarvelCharactersDetailsViewStates.OnLoadingPageDetailsState -> show_more_loading.visibility =
                 View.VISIBLE
             is MarvelCharactersDetailsViewStates.OnSuccessPageDetailsState -> {
-                marvelCharacterDetailsPageAdapter.setMarvelCharactersDetailsPageData(state.marvelCharacterDetailsModel.getMarvelDetailsModel())
+                marvelCharacters = state.marvelCharacterDetailsModel.getMarvelDetailsModel()
+                marvelCharacterDetailsPageAdapter.setMarvelCharactersDetailsPageData(marvelCharacters!!)
                 show_more_loading.visibility = View.GONE
             }
             is MarvelCharactersDetailsViewStates.OnErrorPageDetailsState -> show_more_loading.visibility = View.GONE
 
             is MarvelCharactersDetailsViewStates.OpenMarvelCharacterImagesDialogState -> {
-                marvelCharacterImagesDialog!!.showDialog()
+                marvelCharacterImagesDialog!!.showDialog(marvelCharacters,state.position)
             }
             is MarvelCharactersDetailsViewStates.CloseMarvelCharacterImagesDialogState -> {
                 marvelCharacterImagesDialog!!.hideSearchResultDialog()

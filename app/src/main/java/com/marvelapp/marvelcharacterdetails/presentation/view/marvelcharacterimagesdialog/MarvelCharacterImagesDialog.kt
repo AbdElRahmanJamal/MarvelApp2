@@ -5,24 +5,23 @@ import android.content.Context
 import android.view.Window
 import android.view.WindowManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.LinearSnapHelper
 import com.jakewharton.rxbinding2.view.RxView
 import com.marvelapp.R
 import com.marvelapp.entities.Results
-import com.marvelapp.entities.Thumbnail
 import com.marvelapp.marvelapprecview.MarvelCharactersAdapter
 import com.marvelapp.marvelcharacterdetails.presentation.mvilogic.MarvelCharactersDetailsPageViewIntents
 import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.marvel_character_images.*
 import kotlinx.android.synthetic.main.search_result_dialog.search_close_btn
 
 
 class MarvelCharacterImagesDialog(context: Context) : Dialog(context) {
 
-    private val onImageScroll = PublishSubject.create<MarvelCharactersDetailsPageViewIntents>()
     private var marvelCharactersAdapter: MarvelCharactersAdapter =
         MarvelCharactersAdapter(R.layout.marvel_character_mages_ticket)
+    private var marvelCharacters: MutableMap<String, List<Results>>? = null
+    private var position: Int = 0
 
     companion object {
         private var INSTANCE: MarvelCharacterImagesDialog? = null
@@ -45,9 +44,12 @@ class MarvelCharacterImagesDialog(context: Context) : Dialog(context) {
 
     }
 
-    fun showDialog() {
+    fun showDialog(marvelCharacters: MutableMap<String, List<Results>>?, position: Int) {
+        this.marvelCharacters = marvelCharacters
+        this.position = position
         this.apply {
             if (!isShowing) {
+                marvelCharactersAdapter.setMarvelCharacters(marvelCharacters!!.values.toList()[position])
                 show()
             }
         }
@@ -65,87 +67,9 @@ class MarvelCharacterImagesDialog(context: Context) : Dialog(context) {
         images_rec_view.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = marvelCharactersAdapter
-
+            val snapHelper = LinearSnapHelper()
+            snapHelper.attachToRecyclerView(this)
         }
-        val marvelCharacters: MutableList<Results> = mutableListOf()
-        marvelCharacters.add(
-            Results(
-                id = 0,
-                title = "abdo",
-                name = "",
-                description = "",
-                modified = "",
-                thumbnail = Thumbnail(
-                    "https://image.shutterstock.com/z/stock-photo-jordan-henderson-of-liverpool-celebrates-with-team-mates-and-the-trophy-tottenham-hotspur-v-1418830925",
-                    "jpg"
-                ),
-                resourceURI = "",
-                comics = null,
-                series = null,
-                stories = null,
-                events = null,
-                urls = null
-            )
-        )
-        marvelCharacters.add(
-            Results(
-                id = 0,
-                title = "abdo",
-                name = "",
-                description = "",
-                modified = "",
-                thumbnail = Thumbnail(
-                    "https://image.shutterstock.com/z/stock-photo-jordan-henderson-of-liverpool-celebrates-with-team-mates-and-the-trophy-tottenham-hotspur-v-1418830925",
-                    "jpg"
-                ),
-                resourceURI = "",
-                comics = null,
-                series = null,
-                stories = null,
-                events = null,
-                urls = null
-            )
-        )
-        marvelCharacters.add(
-            Results(
-                id = 0,
-                title = "abdo",
-                name = "",
-                description = "",
-                modified = "",
-                thumbnail = Thumbnail(
-                    "https://image.shutterstock.com/z/stock-photo-jordan-henderson-of-liverpool-celebrates-with-team-mates-and-the-trophy-tottenham-hotspur-v-1418830925",
-                    "jpg"
-                ),
-                resourceURI = "",
-                comics = null,
-                series = null,
-                stories = null,
-                events = null,
-                urls = null
-            )
-        )
-        marvelCharacters.add(
-            Results(
-                id = 0,
-                title = "abdo",
-                name = "",
-                description = "",
-                modified = "",
-                thumbnail = Thumbnail(
-                    "https://image.shutterstock.com/z/stock-photo-jordan-henderson-of-liverpool-celebrates-with-team-mates-and-the-trophy-tottenham-hotspur-v-1418830925",
-                    "jpg"
-                ),
-                resourceURI = "",
-                comics = null,
-                series = null,
-                stories = null,
-                events = null,
-                urls = null
-            )
-        )
-
-        marvelCharactersAdapter.setMarvelCharacters(marvelCharacters)
     }
 
     fun onCloseButtonClicked(): Observable<MarvelCharactersDetailsPageViewIntents.CloseButtonOfSearchDialogClickedIntent> =
@@ -153,6 +77,5 @@ class MarvelCharacterImagesDialog(context: Context) : Dialog(context) {
             MarvelCharactersDetailsPageViewIntents.CloseButtonOfSearchDialogClickedIntent
         }
 
-    fun onScrollItem() = onImageScroll
 }
 

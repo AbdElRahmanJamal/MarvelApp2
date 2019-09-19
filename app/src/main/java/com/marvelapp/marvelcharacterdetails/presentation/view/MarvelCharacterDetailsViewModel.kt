@@ -21,7 +21,10 @@ class MarvelCharacterDetailsViewModel(private val getMarvelCharacterDetailsUseCa
                     getMarvelCharacterDetails(it.charID)
                 }
                 is MarvelCharactersDetailsPageViewIntents.OnDetailItemClickedIntent -> {
-                    Observable.just(MarvelCharactersDetailsViewStates.OpenMarvelCharacterImagesDialogState)
+                    Observable.just(
+                        MarvelCharactersDetailsViewStates
+                            .OpenMarvelCharacterImagesDialogState(it.marvelCharacterDetailsModel, it.position)
+                    )
                 }
                 is MarvelCharactersDetailsPageViewIntents.CloseButtonOfSearchDialogClickedIntent -> {
                     Observable.just(MarvelCharactersDetailsViewStates.CloseMarvelCharacterImagesDialogState)
@@ -31,7 +34,7 @@ class MarvelCharacterDetailsViewModel(private val getMarvelCharacterDetailsUseCa
         }.distinctUntilChanged()
     }
 
-    fun getMarvelCharacterDetails(charID: Int): Observable<MarvelCharactersDetailsViewStates>? {
+    private fun getMarvelCharacterDetails(charID: Int): Observable<MarvelCharactersDetailsViewStates>? {
 
         return getMarvelCharacterDetailsUseCase.getMarvelCharacterDetailsComicsSeriesStoriesEvents(charID)
             .observeOn(AndroidSchedulers.mainThread())
